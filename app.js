@@ -1,3 +1,9 @@
+let answer = 0;
+
+function clear() {
+    answer = 0;
+};
+
 function add(numOne, numTwo) {
     return numOne + numTwo;
 };
@@ -14,7 +20,21 @@ function divide(numOne, numTwo) {
     return numOne / numTwo;
 };
 
-console.log(add(5, 5));
-console.log(subtract(3, 2));
-console.log(multiply(5, 5));
-console.log(divide(10, 2));
+function operate(numOne, operator, numTwo) {
+    let result;
+    switch (operator) {
+        case '+':
+            result = add(numOne, numTwo);
+            break;
+        case '-':
+            result = subtract(numOne, numTwo);
+            break;
+        case '*':
+            result = multiply(numOne, numTwo);
+            break;
+        case '/':
+            result = divide(numOne, numTwo);
+            break;
+    }
+    return result;
+};
