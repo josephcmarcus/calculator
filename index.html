@@ -7,11 +7,13 @@
     <title>Calculator</title>
 </head>
 <body>
-    <div class="main-container">
+    <div id="main-container">
+        <div id="display-container">
+        </div>
         <div class="button-container-left">
-            <button id="c" class="number">C</button>
-            <button id="posneg" class="number">+/-</button>
-            <button id="percent" class="number">%</button>
+            <button id="clear">C</button>
+            <button id="posneg">+/-</button>
+            <button id="percent">%</button>
             <button id="divide" class="operator">÷</button>
         </div>
         <div class="button-container-left">
@@ -34,8 +36,8 @@
         </div>
         <div class="button-container-left-bottom">
             <button id="zero" class="number">0</button>
-            <button id="decimal" class="number">.</button>
-            <button id="equals" class="operator">=</button>
+            <button id="decimal" class="decimal">.</button>
+            <button id="equals" class="equals">=</button>
         </div>
     </div>
     <script src="./app.js"></script>
