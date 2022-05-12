@@ -1,6 +1,6 @@
 body {
     background: linear-gradient(45deg, rgba(96,12,196,1) 0%, rgba(226,38,27,1) 71%, rgba(255,234,11,1) 100%);
-    background-size: contain:
+    background-size: contain;
 }
 
 #main-container, .button-container-left, 
