@@ -191,6 +191,6 @@ function shortenNumber(result) {
         console.log('shortened')
         return result;
     } else {
-        return;
+        return result;
     }
 }
