@@ -1,196 +1,144 @@
-let display = document.getElementById('display-container');
-const mainContainer = document.getElementById('main-container');
-const calcButtons = document.querySelectorAll('button');
-
-let displayNum = 0;
-let numOne = '';
-let numTwo = '';
-let operator = '';
-let lastOperator = '';
-let lastClick = '';
-let result = '';
-
-display.innerText = 0;
-
-mainContainer.addEventListener('click', (event) => {
-    if (event.target.id == 'main-container' || event.target.id == '') {
-        return;
-    } else if (event.target.id == 'equals' && numOne === '') {
-        return;
-    } else if (display.innerText == 0 && event.target.id == 'zero') {
-        numOne = 0;
-        lastClick = event.target.className;
-    } else if (displayNum === '0.' && event.target.className == 'number') {
-        buildNumber();
-        lastClick = event.target.className;
-    } else if (display.innerText == 0 && event.target.className == 'number') {
-        newNumber();
-        lastClick = event.target.className;
-    } else if (display.innerText != 0 && lastClick == 'operator' && 
-      event.target.className == 'number') {
-        newNumber();
-        lastClick = event.target.className;
-    } else if (event.target.id != 'equals' && lastClick == 'equals' && result != '' 
-        && event.target.className == 'number') {
-        newNumber();
-        lastClick = event.target.className;
-    } else if (event.target.id == 'clear') {
-        clear();
-        lastClick = event.target.className;
-    } else if (event.target.id == 'posneg') {
-        posNeg();
-        lastClick = event.target.className;
-    } else if (event.target.id == 'percent') {
-        percent();
-        lastClick = event.target.className;
-    } else if (event.target.id == 'decimal' && lastClick == 'operator' || event.target.id == 'decimal' && lastClick == 'equals') {
-        newDecimalNumber();
-        lastClick = event.target.className;
-    } else if (event.target.className == 'operator' && numOne != '' && lastClick == 'number') {
-        numTwo = displayNum;
-        result = operate(parseFloat(numOne), operator, parseFloat(numTwo));
-        display.innerText = shortenNumber(result);
-        displayNum = result;
-        numOne = result;
-        lastClick = event.target.className;
-        operator = event.target.innerText;
-    } else if (event.target.id == 'decimal') {
-        decimal();
-        lastClick = event.target.className;
-    } else if (event.target.id == 'number' && lastClick == 'equals') {
-        numOne = '';
-        newNumber();
-        lastClick = event.target.className;
-    } else if (event.target.id == 'equals' && result != '' && lastClick == 'number') {
-        numTwo = displayNum;
-        result = operate(parseFloat(numOne), operator, parseFloat(numTwo));
-        shortenNumber(result)
-        display.innerText = shortenNumber(result);
-        displayNum = result;
-        numOne = result;
-        lastClick = event.target.className;
-    } else if (event.target.id == 'equals' && result != '') {
-        result = operate(parseFloat(numOne), operator, parseFloat(numTwo));
-        shortenNumber(result)
-        display.innerText = shortenNumber(result);
-        displayNum = result;
-        numOne = result;
-        lastClick = event.target.className;
-    } else if (event.target.id == 'equals') {
-        numTwo = displayNum;
-        result = operate(parseFloat(numOne), operator, parseFloat(numTwo));
-        display.innerText = shortenNumber(result);
-        displayNum = result;
-        numOne = result;
-        lastClick = event.target.className;
-    } else if (event.target.className == 'operator') {
-        if (numOne == '') {
-        numOne = displayNum;
-        operator = event.target.innerText;
-        calcButtons[17].disabled = false;
-        lastClick = event.target.className;
-        } else {
-            numOne = displayNum;
-            operator = event.target.innerText;
-            lastClick = event.target.className;
-        }
-    } else {
-        buildNumber();
-        lastClick = event.target.className;
-    } console.dir(event.target);
-});
-
-function clear() {
-    displayNum = 0;
-    display.innerText = displayNum;
-    calcButtons[17].disabled = false;
-    numOne = '';
-    numTwo = '';
-    operator = '';
-    result = '';
+const calculator = {
+    displayValue: '0',
+    firstOperand: null,
+    waitingForSecondOperand: false,
+    operator: null,
 };
 
-function posNeg() {
-    if (displayNum.toString().includes('-') == false) {
-        displayNum = '-' + displayNum;
-        display.innerText = displayNum;
+let updateDisplay = () => {
+    const display = document.querySelector('#display-container');
+    display.innerText = calculator.displayValue;
+};
+
+updateDisplay();
+
+const keys = document.querySelectorAll('.calculator-keys');
+for (key of keys) {
+    key.addEventListener('click', (event) => {
+        const { target } = event;
+        if (!target.matches('button')) {
+            return;
+        }
+        switch (target.innerText) {
+            case '+':
+            case '-':
+            case 'x':
+            case '÷':
+            case '=':
+                handleOperator(target.innerText);
+                break;
+            case '.':
+                inputDecimal(target.innerText);
+                break;
+            case 'C':
+                resetCalculator();
+                break;
+            case '%':
+                makePercent();
+                break;
+            case '+/-':
+                makePosNeg();
+                break;
+            default:
+                if (Number.isInteger(parseFloat(target.innerText))) {
+                    inputNumber(target.innerText);
+                }
+        }
+        updateDisplay();
+    });
+}
+
+let inputNumber = (number) => {
+    const { displayValue, waitingForSecondOperand } = calculator;
+    if (waitingForSecondOperand === true) {
+        calculator.displayValue = number;
+        calculator.waitingForSecondOperand = false;
     } else {
-        displayNum = displayNum.slice(1);
-        display.innerText = displayNum;
+    calculator.displayValue = displayValue === '0' ? number : displayValue + number;
+    };
+    console.log(calculator);
+};
+
+let inputDecimal = (decimal) => {
+    if (calculator.waitingForSecondOperand === true) {
+        calculator.displayValue = '0.'
+        calculator.waitingForSecondOperand = false;
+        return;
+    }
+    if (!calculator.displayValue.includes(decimal)) {
+        calculator.displayValue += decimal;
     };
 };
 
-function percent() {
-    displayNum = displayNum / 100;
-    display.innerText = displayNum;
-    calcButtons[17].disabled = true;
+let handleOperator = (nextOperator) => {
+    const { firstOperand, displayValue, operator } = calculator;
+    const inputValue = parseFloat(displayValue);
+    if (operator && calculator.waitingForSecondOperand) {
+        calculator.operator = nextOperator;
+        console.log(calculator);
+        return;
+    }
+    if (firstOperand === null && !isNaN(inputValue)) {
+        calculator.firstOperand = inputValue;
+    } else if (operator) {
+        const result = calculate(firstOperand, inputValue, operator);
+        calculator.displayValue = `${parseFloat(result.toFixed(7))}`;
+        calculator.firstOperand = result;
+    };
+    calculator.waitingForSecondOperand = true;
+    calculator.operator = nextOperator
+    console.log(calculator);
 };
 
-function decimal() {
-    displayNum = displayNum + '.';
-    display.innerText = displayNum;
-    calcButtons[17].disabled = true;
+let makePercent = (number) => {
+    const { displayValue } = calculator;
+    if (calculator.displayvalue === '0') {
+        return;
+    }
+    calculator.displayValue = `${displayValue / 100}`.toString();
 };
 
-function newNumber() {
-    displayNum = event.target.innerText;
-    display.innerText = displayNum;
+let makePosNeg = (number) => {
+    const { displayValue } = calculator;
+    if (calculator.displayValue === '0') {
+        return;
+    }
+    if (calculator.waitingForSecondOperand === true) {
+        if (!calculator.displayValue.includes('-')) {
+        calculator.displayValue = `-${displayValue}`;
+        calculator.firstOperand = parseFloat(calculator.displayValue);
+        return;
+        } else {
+            calculator.displayValue = displayValue.replace('-', '');
+            calculator.firstOperand = parseFloat(calculator.displayValue);
+            return;
+        }
+    }
+    if (!calculator.displayValue.includes('-')) {
+        calculator.displayValue = `-${displayValue}`;
+        return;
+    }
+    calculator.displayValue = displayValue.replace('-', '');
 };
 
-function newDecimalNumber() {
-    displayNum = '0' + event.target.innerText;
-    display.innerText = displayNum;
-};
-
-function buildNumber() {
-    displayNum += event.target.innerText;
-    display.innerText = displayNum;
-};
-
-function add(numOne, numTwo) {
-    return numOne + numTwo;
-};
-
-function subtract(numOne, numTwo) {
-    return numOne - numTwo;
-};
-
-function multiply(numOne, numTwo) {
-    return numOne * numTwo;
-};
-
-function divide(numOne, numTwo) {
-    return numOne / numTwo;
-};
-
-function operate(numOne, operator, numTwo) {
-    let result;
+let calculate = (firstOperand, secondOperand, operator) => {
     switch (operator) {
         case '+':
-            result = add(numOne, numTwo);
-            break;
+            return firstOperand + secondOperand;
         case '-':
-            result = subtract(numOne, numTwo);
-            break;
+            return firstOperand - secondOperand;
         case 'x':
-            result = multiply(numOne, numTwo);
-            break;
+            return firstOperand * secondOperand;
         case '÷':
-            if (numTwo == 0) {
-                return 'Error'
-            }
-            result = divide(numOne, numTwo);
-            break;
-    }
-    return result;
+            return firstOperand / secondOperand;
+    };
+    return secondOperand;
 };
 
-function shortenNumber(result) {
-    if (result.toString().indexOf('.') != -1 && result.toString().length >= 14) {
-        result = Math.round(result);
-        console.log('shortened')
-        return result;
-    } else {
-        return result;
-    }
-}
+let resetCalculator = () => {
+    calculator.displayValue = '0';
+    calculator.firstOperand = null;
+    calculator.waitingForSecondOperand = false;
+    calculator.operator = null;
+    console.log(calculator);
+};
